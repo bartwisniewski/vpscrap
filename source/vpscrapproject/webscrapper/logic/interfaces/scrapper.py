@@ -2,13 +2,13 @@ from dataclasses import dataclass
 from datetime import datetime
 import abc
 
-
+# defaults
 @dataclass
 class Query:
-    place: str
+    region: str
     adults: int
     children: int
-    children_age: list
+    infants: int
     start_date: datetime
     end_date: datetime
 
@@ -36,11 +36,9 @@ class Place:
     price: float = 0.0
 
     def __str__(self):
-        return f"""
-{self.name}
+        return f"""{self.name}
 {self.description}
-{self.address} {self.city} {self.country}
-        """
+{self.address} {self.city} {self.country}"""
 
 
 class Scrapper:
