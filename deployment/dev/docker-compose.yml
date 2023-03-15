@@ -1,16 +1,16 @@
 services:
-  core:
+  scapper:
     build:
       context: ../../source
       dockerfile: Dockerfile
-    container_name: ${CORE_NAME}
+    container_name: ${APP_NAME}
     environment:
-      - DJANGO_SETTINGS_MODULE=vpcoreproject.settings
-      - ALLOWED_HOSTS=${CORE_ALLOWED_HOSTS}
-      - CORE_HOST_NAME=${CORE_NAME}
-      - CORE_PORT=${CORE_PORT}
-      - DB_ENGINE=${CORE_DB_ENGINE}
-      - DB_HOST=${CORE_DB_NAME}
+      - DJANGO_SETTINGS_MODULE=vpscrapproject.settings
+      - ALLOWED_HOSTS=${APP_ALLOWED_HOSTS}
+      - APP_HOST_NAME=${APP_NAME}
+      - APP_PORT=${APP_PORT}
+      - DB_ENGINE=${APP_DB_ENGINE}
+      - DB_HOST=${APP_DB_NAME}
       - DB_DB=${POSTGRES_DB}
       - DB_USER=${POSTGRES_USER}
       - DB_PASSWORD=${POSTGRES_PASSWORD}
@@ -20,22 +20,22 @@ services:
       - |
         python3 manage.py makemigrations
         python3 manage.py migrate
-        python3 manage.py runserver 0.0.0.0:${CORE_PORT}
+        python3 manage.py runserver 0.0.0.0:${APP_PORT}
     healthcheck:
-      test: curl --fail http://0.0.0.0:${CORE_PORT}/ || exit 1
+      test: curl --fail http://0.0.0.0:${APP_PORT}/ || exit 1
       interval: 40s
       timeout: 30s
       retries: 3
       start_period: 60s
     depends_on:
-      core-db:
+      scrapper-db:
         condition: service_healthy
     networks:
       - network_back
 
-  core-db:
+  scrapper-db:
     image: postgres:13
-    container_name: ${CORE_DB_NAME}
+    container_name: ${APP_DB_NAME}
     environment:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -46,7 +46,7 @@ services:
       timeout: 3s
       retries: 3
     volumes:
-      - ./core-db/:/var/lib/postgresql/data/
+      - ./scrapper-db/:/var/lib/postgresql/data/
     networks:
       - network_back
 
@@ -55,15 +55,15 @@ services:
       context: ../../nginx/local
       dockerfile: Dockerfile
     environment:
-      - CORE_HOST_NAME=${CORE_NAME}
-      - CORE_PORT=${CORE_PORT}
+      - APP_HOST_NAME=${APP_NAME}
+      - APP_PORT=${APP_PORT}
     ports:
       - "8001:80"
     networks:
       - network_front
       - network_back
     depends_on:
-      - core
+      - scrapper
 
 networks:
   network_front:
