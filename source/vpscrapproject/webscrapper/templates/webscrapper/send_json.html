@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sending query to webscrapper with JS</title>
+</head>
+<body>
+    <h1 style="color:green;">
+      Test Web Scrapper
+    </h1>
+
+    <p>
+        <form method="post">{% csrf_token %}
+            {{ form.as_p }}
+
+        </form>
+    <button onclick="sendJSON()">Send JSON</button>
+      <p class="result" style="color:green"></p>
+   </p>
+
+  <!-- Include the JavaScript file -->
+    {%include "webscrapper/send_script.html" %}
+</body>
+</html>
