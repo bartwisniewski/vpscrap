@@ -83,7 +83,11 @@ class SlowhopScrapper(Scrapper):
             result.address = clean_text(content.address.string)
             result.name = content.find_all(class_="catalog-tile__name")[0].string
             result.description = clean_text(content.find_all(class_="catalog-tile__description")[0].string)
-            result.price = content.find_all("span", class_="minimal-price__value")[0].string
+            price_as_list = content.find_all("span", class_="minimal-price__value")
+            if price_as_list:
+                result.price = price_as_list[0].string
+            else:
+                result.price = 0.0
             link = place.find_all("a")[0]['href']
             result.url = self.BASE_URL + link.split("?")[0]
             self.results.append(result)
