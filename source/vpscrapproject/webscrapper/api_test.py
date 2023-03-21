@@ -20,6 +20,7 @@ def new_job():
     serializer = QuerySerializer(query)
     response = requests.post("http://127.0.0.1:8000/"+endpoint, json=serializer.data)
     print(response)
+    print(response.json())
 
 
 if __name__ == "__main__":

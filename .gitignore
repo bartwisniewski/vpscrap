@@ -135,8 +135,10 @@ dmypy.json
 # Test emails
 sent_emails/
 
-# Lokal DB container
-core-db/
+# Local containers
+scrapper-db/
+redis/
+rabbitmq/
 
 # Elastic Beanstalk Files
 .elasticbeanstalk/*

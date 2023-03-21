@@ -12,18 +12,18 @@ from webscrapper.forms import QueryForm
 
 class Scrap(APIView):
     def post(self, *args, **kwargs):
-        print(self.request.data)
         query_json = self.request.data
-        print(query_json)
         query_serializer = QuerySerializer(data=query_json)
         if query_serializer.is_valid():
             query = query_serializer.save()
             scrapper = SlowhopScrapper()
             results = scrapper.run(query)
+            serializer = PlaceSerializer(results, many=True)
             for result in results:
                 print(result)
-        else:
-            print("invalid")
+            return Response(data=serializer.data, status=200)
+        print("invalid")
+        Response(status=400)
 
 
 def check_status(job_id: int):

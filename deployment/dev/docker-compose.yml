@@ -1,5 +1,5 @@
 services:
-  scapper:
+  scrapper:
     build:
       context: ../../source
       dockerfile: Dockerfile
@@ -15,6 +15,8 @@ services:
       - DB_USER=${POSTGRES_USER}
       - DB_PASSWORD=${POSTGRES_PASSWORD}
       - DB_PORT=${POSTGRES_PORT}
+      - CELERY_BACKEND = scrapper-redis
+      - CELERY_BROKER = amqp://guest:guest@rabbitmq//
     entrypoint: [ "/bin/sh", "-c" ]
     command:
       - |
@@ -64,46 +66,57 @@ services:
       - network_back
     depends_on:
       - scrapper
+
   celery_worker:
-    build: scraper_api
+    build:
+      context: ../../source
+      dockerfile: Dockerfile
     networks:
       - network_back
     container_name: celery_worker
     hostname: celery_worker
     depends_on:
-      web_db:
+      redis:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
     environment:
       - TZ=${TZ}
-    command: ['celery', '-A', 'app.scraper', 'worker', '-l', 'info']
+    command: ['celery', '-A', 'vpscrapproject.celery', 'worker', '-l', 'info']
 
 
   celery_beat:
-    build: scraper_api
+    build:
+      context: ../../source
+      dockerfile: Dockerfile
     networks:
       - network_back
     container_name: celery_beat
     hostname: celery_beat
     depends_on:
-      web_db:
+      redis:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
     environment:
       - TZ=${TZ}
-    command: [ 'celery', '-A', 'app.scraper', 'beat', '-l', 'info']
+    command: [ 'celery', '-A', 'vpscrapproject.celery', 'beat', '-l', 'info']
 
   redis:
     image: redis:7.0.9-alpine
+    container_name: scrapper-redis
     environment:
       - ALLOW_EMPTY_PASSWORD=yes
     networks:
       - network_back
+    volumes:
+      - ./redis/:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli","ping" ]
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
+    user: "1000:1000"
     container_name: rabbitmq
     hostname: rabbitmq
     ports:
@@ -112,8 +125,9 @@ services:
     networks:
       - network_back
     volumes:
-      - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
-      - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq/
+      - ./rabbitmq/data/:/var/lib/rabbitmq/
+      - ./rabbitmq/log/:/var/log/rabbitmq/
+      - ./rabbitmq/etc/:/etc/rabbitmq/
 
     healthcheck:
       test: rabbitmq-diagnostics check_port_connectivity
