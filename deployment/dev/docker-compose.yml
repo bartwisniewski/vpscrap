@@ -32,8 +32,11 @@ services:
     depends_on:
       scrapper-db:
         condition: service_healthy
+    ports:
+      - "8001:${APP_PORT}"
     networks:
       - network_back
+      - network_scrapper
 
   scrapper-db:
     image: postgres:13
@@ -52,20 +55,6 @@ services:
     networks:
       - network_back
 
-  nginx:
-    build:
-      context: ../../nginx/local
-      dockerfile: Dockerfile
-    environment:
-      - APP_HOST_NAME=${APP_NAME}
-      - APP_PORT=${APP_PORT}
-    ports:
-      - "8001:80"
-    networks:
-      - network_front
-      - network_back
-    depends_on:
-      - scrapper
 
   celery_worker:
     build:
@@ -81,8 +70,9 @@ services:
       rabbitmq:
         condition: service_healthy
     environment:
+      - DJANGO_SETTINGS_MODULE=vpscrapproject.settings
       - TZ=${TZ}
-      - CELERY_BACKEND = scrapper-redis
+      - CELERY_BACKEND = redis://scrapper-redis:6379/0
       - CELERY_BROKER = amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq//
     command: ['celery', '-A', 'vpscrapproject.celery', 'worker', '-l', 'info']
 
@@ -143,7 +133,7 @@ services:
 
 
 networks:
-  network_front:
+  network_scrapper:
     driver: bridge
   network_back:
     driver: bridge

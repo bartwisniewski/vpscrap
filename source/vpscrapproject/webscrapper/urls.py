@@ -5,6 +5,8 @@ from webscrapper import views
 
 
 urlpatterns = [
-    path("scrap", views.Scrap.as_view(), name="scrap"),
+    path("scrap/", views.Scrap.as_view(), name="scrap"),
+    path("check/<str:job_id>/", views.Check.as_view(), name="check"),
+    path("result/<str:job_id>/", views.Result.as_view(), name="result"),
     path("test", views.SendJsonView.as_view(), name="scrap-test"),
 ]
