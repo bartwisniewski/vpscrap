@@ -16,7 +16,7 @@ services:
       - DB_PASSWORD=${POSTGRES_PASSWORD}
       - DB_PORT=${POSTGRES_PORT}
       - CELERY_BACKEND = scrapper-redis
-      - CELERY_BROKER = amqp://guest:guest@rabbitmq//
+      - CELERY_BROKER = amqpp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq//
     entrypoint: [ "/bin/sh", "-c" ]
     command:
       - |
@@ -82,6 +82,8 @@ services:
         condition: service_healthy
     environment:
       - TZ=${TZ}
+      - CELERY_BACKEND = scrapper-redis
+      - CELERY_BROKER = amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq//
     command: ['celery', '-A', 'vpscrapproject.celery', 'worker', '-l', 'info']
 
 
@@ -136,6 +138,8 @@ services:
       retries: 30
     environment:
       - TZ=${TZ}
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS}
 
 
 networks:

@@ -124,5 +124,5 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CELERY_BACKEND = os.environ.get("CELERY_BACKEND", '')
-CELERY_BROKER = os.environ.get("CELERY_BROKER", '')
+CELERY_RESULT_BACKEND = os.environ.get("CELERY_BACKEND", '')
+CELERY_BROKER_URL = os.environ.get("CELERY_BROKER", '')
