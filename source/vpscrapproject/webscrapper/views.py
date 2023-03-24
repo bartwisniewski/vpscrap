@@ -11,8 +11,8 @@ from webscrapper.queue_logic.tasks import scrap
 
 
 class Scrap(APIView):
-    def post(self, *args, **kwargs):
-        query_json = self.request.data
+    def post(self, request, format=None):
+        query_json = request.data
         task = scrap.delay(query_json)
         return Response(data={'task_id': task.id}, status=200)
 
@@ -33,14 +33,14 @@ class Scrap(APIView):
 #         return Response(status=400)
 
 class Check(APIView):
-    def get(self, job_id):
+    def get(self, request, job_id, format=None):
         result = AsyncResult(id=job_id)
         status = result.status
         return Response(data={"job": job_id, "status": status}, status=200)
 
 
 class Result(APIView):
-    def get(self, job_id):
+    def get(self, request, job_id, format=None):
         result = AsyncResult(id=job_id)
         if result.ready():
             return Response(data={"job": job_id, "result": result.get()}, status=200)
