@@ -33,10 +33,10 @@ services:
       scrapper-db:
         condition: service_healthy
     ports:
-      - "8001:${APP_PORT}"
+      - "8002:${APP_PORT}"
     networks:
       - network_back
-      - network_scrapper
+      - network_front
 
   scrapper-db:
     image: postgres:13
@@ -58,10 +58,10 @@ services:
   selenium:
     image: selenium/standalone-chrome-debug
     ports:
-    - 4444:4444
+    - "4444:${SELENIUM_PORT}"
     networks:
       - network_back
-      - network_scrapper
+      - network_front
 
   celery_worker:
     build:
@@ -82,7 +82,7 @@ services:
       - CELERY_BACKEND=redis://scrapper-redis:6379/0
       - CELERY_BROKER=amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq//
       - SELENIUM_HOST=selenium
-      - SELENIUM_PORT=4444
+      - SELENIUM_PORT=${SELENIUM_PORT}
     command: ['celery', '-A', 'vpscrapproject.celery', 'worker', '-l', 'info']
 
 
@@ -140,10 +140,11 @@ services:
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS}
 
-
 networks:
-  network_scrapper:
+  network_front:
     driver: bridge
+    name: scrapper_network_front
   network_back:
     driver: bridge
+    name: scrapper_network_back
     internal: true
