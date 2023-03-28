@@ -17,6 +17,7 @@ SCREENSHOTS_PATH = "/app/screenshots/"
 
 class SlowhopScrapper(Scrapper):
     BASE_URL = "https://slowhop.com/pl/katalog"
+    HOME_URL = "https://slowhop.com"
     LANGUAGE_XPATH = "/html/head/meta[7]"
 
     def __init__(self):
@@ -26,7 +27,7 @@ class SlowhopScrapper(Scrapper):
         self.results = []
 
     def wait_for_element(self, locator: tuple) -> None:
-        timeout = 5
+        timeout = 10
         try:
             element_present = EC.presence_of_element_located(locator=locator)
             WebDriverWait(self.driver, timeout).until(element_present)
@@ -34,7 +35,7 @@ class SlowhopScrapper(Scrapper):
             print(f"Timed out waiting for element {locator}")
 
     def wait_for_element_attribute(self, locator: tuple, attribute: str, value: str) -> None:
-        timeout = 3
+        timeout = 10
         try:
             element_loaded = EC.text_to_be_present_in_element_attribute(locator, attribute, value)
             WebDriverWait(self.driver, timeout).until(element_loaded)
@@ -42,7 +43,7 @@ class SlowhopScrapper(Scrapper):
             print(f"Timed out waiting for element {locator}")
 
     def wait_for_not_text(self, locator: tuple, text: str) -> None:
-        timeout = 3
+        timeout = 10
         try:
             text_present = EC.text_to_be_present_in_element(locator, text)
             text_not_present = EC.none_of(text_present)
@@ -51,7 +52,7 @@ class SlowhopScrapper(Scrapper):
             print(f"Timed out waiting for {text} to not be in {locator}")
 
     def wait_for_url(self, url_part: str) -> None:
-        timeout = 5
+        timeout = 10
         try:
             url_contains = EC.url_contains(url_part)
             WebDriverWait(self.driver, timeout).until(url_contains)
@@ -83,7 +84,6 @@ class SlowhopScrapper(Scrapper):
     def load_region_hints(self, region_search: str) -> None:
         region_filter = self.search_bar.find_element(By.CSS_SELECTOR, "input#where")
         ok = self.driver.get_screenshot_as_file(f"{SCREENSHOTS_PATH}enter_region_filter.png")
-        print(f"screenshot /app/enter_region_filter.png result:{ok}", flush=True)
         region_filter.send_keys(region_search)
         time.sleep(2)
         self.driver.get_screenshot_as_file(f"{SCREENSHOTS_PATH}hints.png")
@@ -117,6 +117,7 @@ class SlowhopScrapper(Scrapper):
         guest_input_xpath = '// *[ @ id = "content-wrapper"] / div / div / div / div / div[1] / div[2] / div[3] ' \
                             '/ button / span[2]'
         self.wait_for_not_text(locator=(By.XPATH, guest_input_xpath), text="Liczba")
+        time.sleep(2)
         html = self.driver.page_source
         soup = BeautifulSoup(html, "html.parser")
         places = soup.find_all("div", class_="catalog-tile", limit=10)
@@ -133,7 +134,7 @@ class SlowhopScrapper(Scrapper):
             else:
                 result.price = 0.0
             link = place.find_all("a")[0]['href']
-            result.url = self.BASE_URL + link.split("?")[0]
+            result.url = self.HOME_URL + link.split("?")[0]
             self.results.append(result)
 
     def run(self, query: Query) -> list[Place]:
