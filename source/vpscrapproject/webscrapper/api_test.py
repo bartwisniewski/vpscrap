@@ -16,7 +16,6 @@ URL = "http://127.0.0.1:8001/"
 
 def get_results(task_id: str):
     endpoint = reverse("result", kwargs={'job_id': task_id})
-    print(f"endpoint to get results is: {endpoint}")
     response = requests.get(URL + endpoint)
     data = response.json()
     results = data.get('result', [])
@@ -26,11 +25,9 @@ def get_results(task_id: str):
 
 def wait_for_job_done(task_id: str):
     endpoint = reverse("check", kwargs={'job_id': task_id})
-    print(f"endpoint to check is: {endpoint}")
     for tries in range(10):
         response = requests.get(URL + endpoint)
         data = response.json()
-        print(response.json())
         if data.get('status', states.PENDING) == states.SUCCESS:
             return True
         time.sleep(2)

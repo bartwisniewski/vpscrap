@@ -32,6 +32,8 @@ services:
     depends_on:
       scrapper-db:
         condition: service_healthy
+      celery_worker:
+        condition: service_started
     ports:
       - "8002:${APP_PORT}"
     networks:
@@ -56,7 +58,8 @@ services:
       - network_back
 
   selenium:
-    image: selenium/standalone-chrome-debug
+    image: selenium/standalone-chrome:4.8.3-20230328
+    container_name: ${SELENIUM_NAME}
     ports:
     - "4444:${SELENIUM_PORT}"
     networks:
@@ -76,12 +79,14 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
+      selenium:
+        condition: service_started
     environment:
       - DJANGO_SETTINGS_MODULE=vpscrapproject.settings
       - TZ=${TZ}
       - CELERY_BACKEND=redis://scrapper-redis:6379/0
       - CELERY_BROKER=amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq//
-      - SELENIUM_HOST=selenium
+      - SELENIUM_HOST=${SELENIUM_NAME}
       - SELENIUM_PORT=${SELENIUM_PORT}
     command: ['celery', '-A', 'vpscrapproject.celery', 'worker', '-l', 'info']
 

@@ -13,6 +13,7 @@ from webscrapper.logic.drivers.remote import Driver
 from webscrapper.utils.helpers import clean_text
 
 SCREENSHOTS_PATH = "/app/screenshots/"
+DEBUG = False
 
 
 class SlowhopScrapper(Scrapper):
@@ -60,7 +61,6 @@ class SlowhopScrapper(Scrapper):
             print(f"Timed out waiting for url containing {url_part}")
 
     def is_polish(self) -> bool:
-
         self.wait_for_element(locator=(By.XPATH, SlowhopScrapper.LANGUAGE_XPATH))
         language = self.driver.find_element(By.XPATH, SlowhopScrapper.LANGUAGE_XPATH).get_attribute('content')
         return language == "pl-PL"
@@ -68,25 +68,32 @@ class SlowhopScrapper(Scrapper):
     def set_polish(self) -> None:
         language_button_xpath = "/html/body/div/div/div/nav/div[2]/ul[3]/div/button"
         language_button = self.driver.find_element(By.XPATH, language_button_xpath)
-        self.driver.get_screenshot_as_file(f"{SCREENSHOTS_PATH}beforelanguagebuttonclick.png")
+        if DEBUG:
+            self.driver.get_screenshot_as_file(f"{SCREENSHOTS_PATH}beforelanguagebuttonclick.png")
         language_button.click()
-        self.driver.get_screenshot_as_file(f"{SCREENSHOTS_PATH}waitingformodal.png")
+        if DEBUG:
+            self.driver.get_screenshot_as_file(f"{SCREENSHOTS_PATH}waitingformodal.png")
         self.wait_for_element((By.ID, "language-switcher-modal___BV_modal_outer_"))
-        self.driver.get_screenshot_as_file(f"{SCREENSHOTS_PATH}modalloaded.png")
+        if DEBUG:
+            self.driver.get_screenshot_as_file(f"{SCREENSHOTS_PATH}modalloaded.png")
         language_field = self.driver.find_element(By.XPATH, "/ html / body / div[2] / div[1] / div / div / div / div")
         polish = language_field.find_element(By.CSS_SELECTOR, 'img[alt="pl"]')
         polish_a = polish.find_element(By.XPATH, "./..")
-        self.driver.get_screenshot_as_file(f"{SCREENSHOTS_PATH}beforeclickingpolish.png")
+        if DEBUG:
+           self.driver.get_screenshot_as_file(f"{SCREENSHOTS_PATH}beforeclickingpolish.png")
         polish_a.click()
         self.wait_for_element_attribute(locator=(By.XPATH, SlowhopScrapper.LANGUAGE_XPATH), attribute="content",
                                         value="pl-PL")
 
     def load_region_hints(self, region_search: str) -> None:
-        region_filter = self.search_bar.find_element(By.CSS_SELECTOR, "input#where")
-        ok = self.driver.get_screenshot_as_file(f"{SCREENSHOTS_PATH}enter_region_filter.png")
+        # region_filter = self.search_bar.find_element(By.CSS_SELECTOR, "input#where")
+        region_filter = self.search_bar.find_element(By.CSS_SELECTOR, "input#whare")
+        if DEBUG:
+            self.driver.get_screenshot_as_file(f"{SCREENSHOTS_PATH}enter_region_filter.png")
         region_filter.send_keys(region_search)
         time.sleep(2)
-        self.driver.get_screenshot_as_file(f"{SCREENSHOTS_PATH}hints.png")
+        if DEBUG:
+           self.driver.get_screenshot_as_file(f"{SCREENSHOTS_PATH}hints.png")
 
     def get_region_phrase(self, region_search: str) -> str:
         self.search_bar = self.driver.find_element(By.CSS_SELECTOR, "div.search-bar")
@@ -121,7 +128,8 @@ class SlowhopScrapper(Scrapper):
         html = self.driver.page_source
         soup = BeautifulSoup(html, "html.parser")
         places = soup.find_all("div", class_="catalog-tile", limit=10)
-        self.driver.get_screenshot_as_file(f"{SCREENSHOTS_PATH}results.png")
+        if DEBUG:
+            self.driver.get_screenshot_as_file(f"{SCREENSHOTS_PATH}results.png")
         for place in places:
             content = place.find_all("div", class_="catalog-tile__content")[0]
             result = Place()
@@ -148,9 +156,7 @@ class SlowhopScrapper(Scrapper):
 
 
 if __name__ == "__main__":
-    print("running")
     scrapper = SlowhopScrapper()
-    print("initialized")
     query = Query(region="Mazury", adults=8, children=3, infants=1, start_date=datetime(2023, 7, 20),
                   end_date=datetime(2023, 7, 27))
     results = scrapper.run(query)
