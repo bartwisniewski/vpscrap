@@ -86,7 +86,6 @@ class SlowhopScrapper(Scrapper):
                                         value="pl-PL")
 
     def load_region_hints(self, region_search: str) -> None:
-        # region_filter = self.search_bar.find_element(By.CSS_SELECTOR, "input#where")
         region_filter = self.search_bar.find_element(By.CSS_SELECTOR, "input#whare")
         if DEBUG:
             self.driver.get_screenshot_as_file(f"{SCREENSHOTS_PATH}enter_region_filter.png")
@@ -151,6 +150,7 @@ class SlowhopScrapper(Scrapper):
             self.set_polish()
         self.make_url_parameters(query)
         self.scrap()
+        self.driver.close()
 
         return self.results
 
