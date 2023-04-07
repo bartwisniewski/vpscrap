@@ -42,7 +42,6 @@ class Place:
 
 
 class Scrapper:
-
     @abc.abstractmethod
     def run(self, query: Query) -> list[Place]:
         raise NotImplementedError

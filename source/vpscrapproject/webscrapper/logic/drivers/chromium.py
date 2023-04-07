@@ -26,19 +26,21 @@ class Driver(metaclass=SingletonMeta):
         self.options = webdriver.ChromeOptions()
         self.options.add_argument("--no-sandbox")
         self.options.add_argument("--remote-debugging-port=9222")
-        self.options.add_argument('--headless')
+        self.options.add_argument("--headless")
         self.options.add_argument("--lang=pl-PL")
         self.options.add_argument("--window-size=1920,1080")
-        self.options.add_experimental_option('prefs', {'intl.accept_languages': 'pl,pl_PL'})
-        self.options.page_load_strategy = 'none'
-        #self.path = ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
+        self.options.add_experimental_option(
+            "prefs", {"intl.accept_languages": "pl,pl_PL"}
+        )
+        self.options.page_load_strategy = "none"
+        # self.path = ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install()
         print("PYTHONPATH and PATH")
         print(sys.path)
-        print(os.environ.get("PATH", ''))
-        status = os.stat(f'{settings.BASE_DIR}/chromedriver')
+        print(os.environ.get("PATH", ""))
+        status = os.stat(f"{settings.BASE_DIR}/chromedriver")
         print(f"chromedriver permissions {oct(status.st_mode)[-3:]}")
         print("start chromium service", flush=True)
-        self.service = ChromiumService(f'{settings.BASE_DIR}/chromedriver')
+        self.service = ChromiumService(f"{settings.BASE_DIR}/chromedriver")
         print("init driver", flush=True)
         self.driver = Chrome(options=self.options, service=self.service)
         print("done", flush=True)

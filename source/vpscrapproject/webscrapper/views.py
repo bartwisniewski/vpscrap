@@ -1,4 +1,3 @@
-
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from celery.result import AsyncResult, states
@@ -12,7 +11,7 @@ class Scrap(APIView):
     def post(self, request, format=None):
         query_json = request.data
         task = scrap.delay(query_json)
-        return Response(data={'task_id': task.id}, status=200)
+        return Response(data={"task_id": task.id}, status=200)
 
 
 def get_state(result: AsyncResult) -> any:
@@ -46,5 +45,5 @@ class SendJsonView(TemplateView):
     template_name = "webscrapper/send_json.html"
 
     def get_context_data(self, **kwargs):
-        context = {"form": QueryForm(), 'endpoint': reverse("scrap")}
+        context = {"form": QueryForm(), "endpoint": reverse("scrap")}
         return context

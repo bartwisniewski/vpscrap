@@ -16,15 +16,8 @@ def scrap(self, query):
             results = scrapper.run(query)
         except WebDriverException:
             print("web driver exception")
-            self.update_state(
-                state=states.FAILURE,
-                meta='WEB DRIVER FAILURE'
-            )
+            self.update_state(state=states.FAILURE, meta="WEB DRIVER FAILURE")
             raise Ignore()
         serializer = PlaceSerializer(results, many=True)
         return serializer.data
     return None
-
-
-
-

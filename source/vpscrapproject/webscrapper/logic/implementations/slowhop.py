@@ -35,10 +35,14 @@ class SlowhopScrapper(Scrapper):
         except TimeoutException:
             print(f"Timed out waiting for element {locator}")
 
-    def wait_for_element_attribute(self, locator: tuple, attribute: str, value: str) -> None:
+    def wait_for_element_attribute(
+        self, locator: tuple, attribute: str, value: str
+    ) -> None:
         timeout = 10
         try:
-            element_loaded = EC.text_to_be_present_in_element_attribute(locator, attribute, value)
+            element_loaded = EC.text_to_be_present_in_element_attribute(
+                locator, attribute, value
+            )
             WebDriverWait(self.driver, timeout).until(element_loaded)
         except TimeoutException:
             print(f"Timed out waiting for element {locator}")
@@ -62,54 +66,69 @@ class SlowhopScrapper(Scrapper):
 
     def is_polish(self) -> bool:
         self.wait_for_element(locator=(By.XPATH, SlowhopScrapper.LANGUAGE_XPATH))
-        language = self.driver.find_element(By.XPATH, SlowhopScrapper.LANGUAGE_XPATH).get_attribute('content')
+        language = self.driver.find_element(
+            By.XPATH, SlowhopScrapper.LANGUAGE_XPATH
+        ).get_attribute("content")
         return language == "pl-PL"
 
     def set_polish(self) -> None:
         language_button_xpath = "/html/body/div/div/div/nav/div[2]/ul[3]/div/button"
         language_button = self.driver.find_element(By.XPATH, language_button_xpath)
         if DEBUG:
-            self.driver.get_screenshot_as_file(f"{SCREENSHOTS_PATH}beforelanguagebuttonclick.png")
+            self.driver.get_screenshot_as_file(
+                f"{SCREENSHOTS_PATH}beforelanguagebuttonclick.png"
+            )
         language_button.click()
         if DEBUG:
             self.driver.get_screenshot_as_file(f"{SCREENSHOTS_PATH}waitingformodal.png")
         self.wait_for_element((By.ID, "language-switcher-modal___BV_modal_outer_"))
         if DEBUG:
             self.driver.get_screenshot_as_file(f"{SCREENSHOTS_PATH}modalloaded.png")
-        language_field = self.driver.find_element(By.XPATH, "/ html / body / div[2] / div[1] / div / div / div / div")
+        language_field = self.driver.find_element(
+            By.XPATH, "/ html / body / div[2] / div[1] / div / div / div / div"
+        )
         polish = language_field.find_element(By.CSS_SELECTOR, 'img[alt="pl"]')
         polish_a = polish.find_element(By.XPATH, "./..")
         if DEBUG:
-           self.driver.get_screenshot_as_file(f"{SCREENSHOTS_PATH}beforeclickingpolish.png")
+            self.driver.get_screenshot_as_file(
+                f"{SCREENSHOTS_PATH}beforeclickingpolish.png"
+            )
         polish_a.click()
-        self.wait_for_element_attribute(locator=(By.XPATH, SlowhopScrapper.LANGUAGE_XPATH), attribute="content",
-                                        value="pl-PL")
+        self.wait_for_element_attribute(
+            locator=(By.XPATH, SlowhopScrapper.LANGUAGE_XPATH),
+            attribute="content",
+            value="pl-PL",
+        )
 
     def load_region_hints(self, region_search: str) -> None:
         region_filter = self.search_bar.find_element(By.CSS_SELECTOR, "input#whare")
         if DEBUG:
-            self.driver.get_screenshot_as_file(f"{SCREENSHOTS_PATH}enter_region_filter.png")
+            self.driver.get_screenshot_as_file(
+                f"{SCREENSHOTS_PATH}enter_region_filter.png"
+            )
         region_filter.send_keys(region_search)
         time.sleep(2)
         if DEBUG:
-           self.driver.get_screenshot_as_file(f"{SCREENSHOTS_PATH}hints.png")
+            self.driver.get_screenshot_as_file(f"{SCREENSHOTS_PATH}hints.png")
 
     def get_region_phrase(self, region_search: str) -> str:
         self.search_bar = self.driver.find_element(By.CSS_SELECTOR, "div.search-bar")
         self.load_region_hints(region_search)
         result_links = self.search_bar.find_element(By.CSS_SELECTOR, "div.result-links")
-        result_links_list = result_links.find_element(By.CSS_SELECTOR, "ul.result-links__list")
+        result_links_list = result_links.find_element(
+            By.CSS_SELECTOR, "ul.result-links__list"
+        )
         best_hint = result_links_list.find_element(By.CSS_SELECTOR, 'a[href="#"]')
         best_hint.click()
         self.wait_for_url(url_part="?")
-        return self.driver.current_url.split('?')[1]
+        return self.driver.current_url.split("?")[1]
 
     def make_url_parameters(self, query: Query) -> None:
         self.url_parameters = ""
         self.url_parameters += self.get_region_phrase(query.region)
         self.url_parameters += f"&adults={query.adults}"
         self.url_parameters += f"&children={query.children + query.infants}"
-        children_age = ['12'] * query.children + ['1'] * query.infants
+        children_age = ["12"] * query.children + ["1"] * query.infants
         str_children_age = ",".join(children_age)
 
         self.url_parameters += f"&children_age={str_children_age}"
@@ -120,8 +139,10 @@ class SlowhopScrapper(Scrapper):
         self.results = []
         url = self.BASE_URL + "?" + self.url_parameters
         self.driver.get(url)
-        guest_input_xpath = '// *[ @ id = "content-wrapper"] / div / div / div / div / div[1] / div[2] / div[3] ' \
-                            '/ button / span[2]'
+        guest_input_xpath = (
+            '// *[ @ id = "content-wrapper"] / div / div / div / div / div[1] / div[2] / div[3] '
+            "/ button / span[2]"
+        )
         self.wait_for_not_text(locator=(By.XPATH, guest_input_xpath), text="Liczba")
         time.sleep(2)
         html = self.driver.page_source
@@ -134,13 +155,15 @@ class SlowhopScrapper(Scrapper):
             result = Place()
             result.address = clean_text(content.address.string)
             result.name = content.find_all(class_="catalog-tile__name")[0].string
-            result.description = clean_text(content.find_all(class_="catalog-tile__description")[0].string)
+            result.description = clean_text(
+                content.find_all(class_="catalog-tile__description")[0].string
+            )
             price_as_list = content.find_all("span", class_="minimal-price__value")
             if price_as_list:
                 result.price = float(price_as_list[0].string.split(" ")[0])
             else:
                 result.price = 0.0
-            link = place.find_all("a")[0]['href']
+            link = place.find_all("a")[0]["href"]
             result.url = self.HOME_URL + link.split("?")[0]
             self.results.append(result)
 
@@ -157,8 +180,14 @@ class SlowhopScrapper(Scrapper):
 
 if __name__ == "__main__":
     scrapper = SlowhopScrapper()
-    query = Query(region="Mazury", adults=8, children=3, infants=1, start_date=datetime(2023, 7, 20),
-                  end_date=datetime(2023, 7, 27))
+    query = Query(
+        region="Mazury",
+        adults=8,
+        children=3,
+        infants=1,
+        start_date=datetime(2023, 7, 20),
+        end_date=datetime(2023, 7, 27),
+    )
     results = scrapper.run(query)
     for result in results:
         print(result)
