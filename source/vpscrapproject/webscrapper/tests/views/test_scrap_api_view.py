@@ -19,6 +19,7 @@ def mock_scrap_job(*args, **kwargs):
     return Task()
 
 
+@patch("webscrapper.queue_logic.tasks.scrap.delay", mock_scrap_job)
 class ScrapApiViewTest(TestCase):
     url = reverse("scrap")
 
@@ -35,17 +36,14 @@ class ScrapApiViewTest(TestCase):
         serializer = QuerySerializer(query)
         self.query_data = serializer.data
 
-    @patch("webscrapper.queue_logic.tasks.scrap.delay", mock_scrap_job)
     def test_should_return_ok(self):
         response = self.client.post(self.url, json=self.query_data)
         self.assertEqual(response.status_code, HTTPStatus.OK)
 
-    @patch("webscrapper.queue_logic.tasks.scrap.delay", mock_scrap_job)
     def test_should_return_task_id(self):
         response = self.client.post(self.url, json=self.query_data)
         self.assertIn("task_id", response.json())
 
-    @patch("webscrapper.queue_logic.tasks.scrap.delay", mock_scrap_job)
     def test_should_return_correct_task_id(self):
         response = self.client.post(self.url, json=self.query_data)
         task_id = response.json().get("task_id", 0)
