@@ -36,4 +36,4 @@ jobs:
         CELERY_BACKEND: redis://scrapper-redis:6379/0
         CELERY_BROKER: amqp://rabbituser:rabbitpass@rabbitmq//
       run: |
-        python manage.py test
+        python source/vpscrapproject/manage.py test
