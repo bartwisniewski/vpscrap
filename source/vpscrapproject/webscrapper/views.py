@@ -22,23 +22,25 @@ def get_state(result: AsyncResult) -> any:
 
 
 class Check(APIView):
-    def get(self, request, job_id, format=None):
-        result = AsyncResult(id=job_id)
+    def get(self, request, task_id, format=None):
+        result = AsyncResult(id=task_id)
         status = get_state(result)
-        return Response(data={"job": job_id, "status": status}, status=200)
+        return Response(data={"task_id": task_id, "status": status}, status=200)
 
 
 class Result(APIView):
-    def get(self, request, job_id, format=None):
-        result = AsyncResult(id=job_id)
+    def get(self, request, task_id, format=None):
+        result = AsyncResult(id=task_id)
         if result.ready() or result.ignored:
             if result.successful():
                 result_data = result.get()
             else:
                 result_data = []
-            return Response(data={"job": job_id, "result": result_data}, status=200)
+            return Response(
+                data={"task_id": task_id, "result": result_data}, status=200
+            )
         status = get_state(result)
-        return Response(data={"job": job_id, "status": status}, status=200)
+        return Response(data={"task_id": task_id, "status": status}, status=200)
 
 
 class SendJsonView(TemplateView):
