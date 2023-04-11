@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import List
 
 from bs4 import BeautifulSoup
 from selenium.webdriver.common.by import By
@@ -167,7 +168,7 @@ class SlowhopScrapper(Scrapper):
             result.url = self.HOME_URL + link.split("?")[0]
             self.results.append(result)
 
-    def run(self, query: Query) -> list[Place]:
+    def run(self, query: Query) -> List[Place]:
         self.driver.get(self.BASE_URL)
         if not self.is_polish():
             self.set_polish()

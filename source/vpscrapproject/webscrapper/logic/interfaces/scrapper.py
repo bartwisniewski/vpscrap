@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
 import abc
+from typing import List
 
 # defaults
 @dataclass
@@ -43,5 +44,5 @@ class Place:
 
 class Scrapper:
     @abc.abstractmethod
-    def run(self, query: Query) -> list[Place]:
+    def run(self, query: Query) -> List[Place]:
         raise NotImplementedError
