@@ -8,7 +8,7 @@ from webscrapper.schemas.serializers import PlaceSerializer, QuerySerializer
 
 @app.task(bind=True)
 def scrap(self, query):
-    query_serializer = QuerySerializer(dbartwata=query)
+    query_serializer = QuerySerializer(data=query)
     if query_serializer.is_valid():
         query = query_serializer.save()
         scrapper = SlowhopScrapper()
