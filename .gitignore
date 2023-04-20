@@ -137,8 +137,13 @@ sent_emails/
 
 # Local containers
 scrapper-db/
-redis/
-rabbitmq/
+redis/*
+rabbitmq/data/*
+!rabbitmq/data/.gitkeep
+rabbitmq/etc/*
+!rabbitmq/etc/.gitkeep
+rabbitmq/log/*
+!rabbitmq/log/.gitkeep
 
 # Elastic Beanstalk Files
 .elasticbeanstalk/*
