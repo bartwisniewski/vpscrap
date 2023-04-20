@@ -9,12 +9,6 @@ services:
       - ALLOWED_HOSTS=${APP_ALLOWED_HOSTS}
       - APP_HOST_NAME=${APP_NAME}
       - APP_PORT=${APP_PORT}
-      - DB_ENGINE=${APP_DB_ENGINE}
-      - DB_HOST=${APP_DB_NAME}
-      - DB_DB=${POSTGRES_DB}
-      - DB_USER=${POSTGRES_USER}
-      - DB_PASSWORD=${POSTGRES_PASSWORD}
-      - DB_PORT=${POSTGRES_PORT}
       - CELERY_BACKEND=redis://scrapper-redis:6379/0
       - CELERY_BROKER=amqp://${RABBITMQ_USER}:${RABBITMQ_PASS}@rabbitmq//
     entrypoint: [ "/bin/sh", "-c" ]
@@ -32,8 +26,6 @@ services:
       retries: 3
       start_period: 60s
     depends_on:
-      scrapper-db:
-        condition: service_healthy
       celery_worker:
         condition: service_started
     ports:
@@ -41,23 +33,6 @@ services:
     networks:
       - network_back
       - network_front
-
-  scrapper-db:
-    image: postgres:13
-    container_name: ${APP_DB_NAME}
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
-    healthcheck:
-      test: pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}
-      interval: 10s
-      timeout: 3s
-      retries: 3
-    volumes:
-      - ./scrapper-db/:/var/lib/postgresql/data/
-    networks:
-      - network_back
 
   selenium:
     image: selenium/standalone-chrome:4.8.3-20230328
